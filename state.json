@@ -7,9 +7,9 @@
     "test": 120
   },
   "unlock": {
-    "state": "pending",
-    "requested_at": "2026-08-29T10:27:26.914Z",
-    "effective_at": "2026-08-31T10:27:26.914Z"
+    "state": "locked",
+    "requested_at": null,
+    "effective_at": null
   },
-  "updated_at": "2026-08-29T10:27:26.917Z"
+  "updated_at": "2026-08-29T10:27:51.985Z"
 }
