@@ -1,0 +1,51 @@
+# The only sanctioned way to change the rules. Run it from the Actions tab.
+#
+# Loosening anything (raising the limit, unlocking enforcement) is parked for
+# 48 hours before it takes effect. Tightening applies at once. Nothing here can
+# push the limit above the 2700s ceiling that is compiled into the clients.
+name: Request rule change
+
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: What to change
+        required: true
+        type: choice
+        options: [set-limit, unlock, cancel-unlock, relock]
+      value:
+        description: 'For set-limit: the new daily budget in seconds (max 2700)'
+        required: false
+        default: '2700'
+
+concurrency:
+  group: slate-state
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  request:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - env:
+          SLATE_ACTION: ${{ inputs.action }}
+          SLATE_VALUE: ${{ inputs.value }}
+        run: node scripts/request.mjs
+      - name: Commit
+        run: |
+          git config user.name  "slate-bot"
+          git config user.email "slate-bot@users.noreply.github.com"
+          git add state.json config/limit.json
+          git diff --staged --quiet && exit 0
+          git commit -m "request: ${{ inputs.action }}"
+          for i in 1 2 3; do
+            git push && exit 0
+            git pull --rebase --autostash
+          done
+          exit 1

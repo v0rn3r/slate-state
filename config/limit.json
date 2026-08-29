@@ -1,0 +1,5 @@
+{
+  "limit_seconds": 2700,
+  "pending": null,
+  "_note": "Do not hand-edit. Changes made here are ignored by the rollover workflow, which only trusts values it wrote itself. Use the 'Request limit change' workflow. Clients also clamp to their compiled-in 2700s ceiling regardless of what this file says."
+}

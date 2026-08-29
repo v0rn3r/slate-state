@@ -1,0 +1,38 @@
+# Housekeeping: rolls the day over at the 04:00 boundary and lands any change
+# whose 48h cooldown has expired. Runs on a schedule so a cooldown completes
+# even if no device ever checks in.
+name: rollover
+
+on:
+  schedule:
+    - cron: '*/20 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: slate-state
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  rollover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - run: node scripts/rollover.mjs
+      - name: Commit
+        run: |
+          git config user.name  "slate-bot"
+          git config user.email "slate-bot@users.noreply.github.com"
+          git add state.json config/limit.json
+          git diff --staged --quiet && exit 0
+          git commit -m "rollover"
+          for i in 1 2 3; do
+            git push && exit 0
+            git pull --rebase --autostash
+          done
+          exit 1
