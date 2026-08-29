@@ -1,17 +1,15 @@
 # The only way a device is allowed to touch the shared counter.
 #
-# Devices hold a fine-grained PAT scoped to Actions:write on this repo and
-# nothing else. That token can start this workflow. It cannot read or write
-# repository contents, so a device can never edit state.json, config/limit.json,
-# or this workflow file directly - it can only submit a number and let the
-# server do the arithmetic.
+# Devices hold a token that can start this workflow and read a public repo, and
+# nothing else. They submit a number and let the workflow do the arithmetic;
+# they cannot edit state.json, config/limit.json, or this file.
 name: report
 
 on:
   workflow_dispatch:
     inputs:
       device:
-        description: Device id (lowercase, e.g. pc-chrome or phone)
+        description: Device id (lowercase, e.g. pc-chromium or phone)
         required: true
       day:
         description: Day key, YYYY-MM-DD
@@ -20,7 +18,6 @@ on:
         description: Total seconds this device has used today (monotonic)
         required: true
 
-# Serialised. Two devices reporting at once queue rather than race the commit.
 concurrency:
   group: slate-state
   cancel-in-progress: false
@@ -31,28 +28,50 @@ permissions:
 jobs:
   accrue:
     runs-on: ubuntu-latest
+    env:
+      SLATE_DEVICE: ${{ inputs.device }}
+      SLATE_DAY: ${{ inputs.day }}
+      SLATE_SECONDS: ${{ inputs.seconds }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Apply report
-        env:
-          SLATE_DEVICE: ${{ inputs.device }}
-          SLATE_DAY: ${{ inputs.day }}
-          SLATE_SECONDS: ${{ inputs.seconds }}
-        run: node scripts/accrue.mjs
-
-      - name: Commit
+      # Recompute, never rebase.
+      #
+      # Two devices reporting seconds apart can still overlap, and a rebase then
+      # hits a content conflict in state.json and strands the run mid-rebase -
+      # which is exactly how the first real report from a phone was lost. So on
+      # a rejected push, throw the local work away, take the new head, and run
+      # the accrual again. That is safe precisely because a report is a running
+      # total combined with max(): re-applying it against fresher state gives
+      # the right answer, where replaying a diff would not.
+      - name: Apply and commit
         run: |
           git config user.name  "slate-bot"
           git config user.email "slate-bot@users.noreply.github.com"
-          git add state.json config/limit.json
-          git diff --staged --quiet && exit 0
-          git commit -m "report: ${{ inputs.device }} ${{ inputs.seconds }}s"
-          for i in 1 2 3; do
-            git push && exit 0
-            git pull --rebase --autostash
+
+          for attempt in 1 2 3 4 5; do
+            git fetch --quiet origin main
+            git reset --quiet --hard origin/main
+
+            node scripts/accrue.mjs
+
+            git add state.json config/limit.json
+            if git diff --staged --quiet; then
+              echo "nothing to record"
+              exit 0
+            fi
+
+            git commit --quiet -m "report: ${SLATE_DEVICE} ${SLATE_SECONDS}s"
+            if git push --quiet origin main; then
+              exit 0
+            fi
+
+            echo "attempt ${attempt}: push rejected, recomputing against the new head"
+            sleep $(( (RANDOM % 4) + 1 ))
           done
+
+          echo "::error::could not land the report after 5 attempts"
           exit 1
