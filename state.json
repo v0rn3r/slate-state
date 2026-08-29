@@ -2,9 +2,9 @@
   "schema": 1,
   "day": "2026-08-29",
   "limit_seconds": 2700,
-  "used_seconds": 20,
+  "used_seconds": 21,
   "devices": {
-    "phone": 20,
+    "phone": 21,
     "pc-chromium": 0
   },
   "unlock": {
@@ -12,5 +12,5 @@
     "requested_at": null,
     "effective_at": null
   },
-  "updated_at": "2026-08-29T15:06:02.471Z"
+  "updated_at": "2026-08-29T15:12:47.101Z"
 }
