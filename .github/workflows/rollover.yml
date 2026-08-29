@@ -8,10 +8,12 @@ on:
     - cron: '*/20 * * * *'
   workflow_dispatch:
 
-concurrency:
-  group: slate-state
-  cancel-in-progress: false
-
+# No concurrency group here, deliberately.
+#
+# A group with cancel-in-progress:false queues exactly one pending run and
+# CANCELS every other - so a burst of reports silently loses all but two, while
+# each device has already had its 204 and believes it reported. Letting the runs
+# race and recompute is strictly safer: contention costs a retry, not data.
 permissions:
   contents: write
 
