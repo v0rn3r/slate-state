@@ -2,15 +2,15 @@
   "schema": 1,
   "day": "2026-08-30",
   "limit_seconds": 2700,
-  "used_seconds": 2364,
+  "used_seconds": 2370,
   "devices": {
     "phone": 2262,
-    "pc-chromium": 102
+    "pc-chromium": 108
   },
   "unlock": {
     "state": "locked",
     "requested_at": null,
     "effective_at": null
   },
-  "updated_at": "2026-08-30T04:28:21.485Z"
+  "updated_at": "2026-08-30T04:28:29.838Z"
 }
