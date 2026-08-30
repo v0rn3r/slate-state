@@ -4,12 +4,13 @@
   "limit_seconds": 2700,
   "used_seconds": 2257,
   "devices": {
-    "phone": 2257
+    "phone": 2257,
+    "pc-chromium": 0
   },
   "unlock": {
     "state": "locked",
     "requested_at": null,
     "effective_at": null
   },
-  "updated_at": "2026-08-30T04:13:01.553Z"
+  "updated_at": "2026-08-30T04:20:08.706Z"
 }
