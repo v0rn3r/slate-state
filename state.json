@@ -2,14 +2,14 @@
   "schema": 1,
   "day": "2026-08-30",
   "limit_seconds": 2700,
-  "used_seconds": 1310,
+  "used_seconds": 1313,
   "devices": {
-    "phone": 1310
+    "phone": 1313
   },
   "unlock": {
     "state": "locked",
     "requested_at": null,
     "effective_at": null
   },
-  "updated_at": "2026-08-30T03:24:49.204Z"
+  "updated_at": "2026-08-30T03:39:50.384Z"
 }
