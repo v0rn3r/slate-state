@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "day": "2026-11-07",
+  "day": "2026-11-08",
   "limit_seconds": 2700,
   "used_seconds": 0,
   "devices": {},
@@ -9,5 +9,5 @@
     "requested_at": null,
     "effective_at": null
   },
-  "updated_at": "2026-11-07T19:51:19.710Z"
+  "updated_at": "2026-11-07T23:24:18.634Z"
 }
